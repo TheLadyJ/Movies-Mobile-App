@@ -82,7 +82,6 @@ export class DetailsPage implements OnInit {
   @Input()
   set id(movieId: string) {
     this.movieService.getMovieDetails(movieId).subscribe((movie) => {
-      console.log(movie);
       this.movie.set(movie);
     });
   }

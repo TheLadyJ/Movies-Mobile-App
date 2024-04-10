@@ -8,8 +8,11 @@
   @if (movie(); as movie){
   <ion-card>
     <div
-      [style.height.px]="300"
+      id="movie-image"
+      [style.height.px]="550"
       [style.background-image]="'url('+imageBaseUrl+'/w400'+movie?.poster_path +')'"
+      [style.background-repeat]="'no-repeat'"
+      [style.background-position]="'center'"
     ></div>
     <ion-card-header>
       <ion-card-title> {{movie?.title}} </ion-card-title>
