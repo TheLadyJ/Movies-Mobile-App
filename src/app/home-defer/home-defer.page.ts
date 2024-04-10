@@ -14,10 +14,19 @@ import {
   IonLabel,
   IonBadge,
   IonInfiniteScroll,
+  IonSearchbar,
 } from '@ionic/angular/standalone';
 import { MovieService } from '../services/movie.service';
-import { catchError, finalize } from 'rxjs';
-import { MovieResult } from '../services/interfaces';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+} from 'rxjs';
+import { ApiResult, MovieResult } from '../services/interfaces';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -27,6 +36,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./home-defer.page.scss'],
   standalone: true,
   imports: [
+    IonSearchbar,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
     IonBadge,
@@ -58,20 +68,64 @@ export class HomeDeferPage {
   public movies: MovieResult[] = [];
   public imageBaseUrl = 'https://image.tmdb.org/t/p';
   public dummyArray = new Array(5);
+  public searchTerm: string | null = null;
+  private moviesObservable: Observable<ApiResult> =
+    this.movieService.getTopRatedMovies();
+  private searchTerms = new Subject<string>();
+  private searchSubscription: Subscription;
 
   constructor() {
-    this.loadMovies();
+    this.searchSubscription = this.searchTerms
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe((term) => {
+        this.resetMovieList();
+        this.searchTerm = term;
+        this.updateMoviesObservale();
+        this.loadMovies(this.moviesObservable);
+      });
   }
 
-  loadMovies(event?: InfiniteScrollCustomEvent) {
+  updateMoviesObservale() {
+    if (this.searchTerm != null && this.searchTerm != '') {
+      this.moviesObservable = this.movieService.getMoviesBySearchTerm(
+        this.searchTerm,
+        this.currentPage
+      );
+    } else {
+      this.moviesObservable = this.movieService.getTopRatedMovies(
+        this.currentPage
+      );
+    }
+  }
+
+  resetMovieList() {
+    this.currentPage = 1;
+    this.movies = [];
+  }
+
+  ngOnInit() {
+    this.loadMovies(this.moviesObservable);
+  }
+
+  onSearchChange(event: any) {
+    this.searchTerms.next(event.detail.value);
+  }
+
+  ngOnDestroy() {
+    this.searchSubscription.unsubscribe();
+  }
+
+  loadMovies(
+    moviesObservable: Observable<ApiResult>,
+    event?: InfiniteScrollCustomEvent
+  ) {
     this.error = null;
 
     if (!event) {
       this.isLoading = true;
     }
 
-    this.movieService
-      .getTopRatedMovies(this.currentPage)
+    moviesObservable
       .pipe(
         finalize(() => {
           this.isLoading = false;
@@ -97,6 +151,7 @@ export class HomeDeferPage {
 
   loadMore(event: InfiniteScrollCustomEvent) {
     this.currentPage++;
-    this.loadMovies(event);
+    this.updateMoviesObservale();
+    this.loadMovies(this.moviesObservable, event);
   }
 }

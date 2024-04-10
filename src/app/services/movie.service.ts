@@ -25,4 +25,11 @@ export class MovieService {
       `${BASE_URL}/movie/${id}?&api_key=${API_KEY}`
     );
   }
+
+  getMoviesBySearchTerm(searchTerm: string, page = 1): Observable<ApiResult> {
+    let search = searchTerm.trim().replace(' ', '+');
+    return this.http.get<ApiResult>(
+      `${BASE_URL}/search/movie?query=${search}&page=${page}&api_key=${API_KEY}`
+    );
+  }
 }
