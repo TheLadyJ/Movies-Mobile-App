@@ -6,8 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
   IonHeader,
   IonToolbar,
@@ -29,6 +28,9 @@ import {
   IonText,
   IonCardContent,
   IonIcon,
+  IonButton,
+  IonButtons,
+  IonBackButton,
 } from '@ionic/angular/standalone';
 import { MovieService } from '../services/movie.service';
 import { MovieResult } from '../services/interfaces';
@@ -42,6 +44,9 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./details.page.scss'],
   standalone: true,
   imports: [
+    IonBackButton,
+    IonButtons,
+    IonButton,
     IonIcon,
     IonCardContent,
     IonText,
